@@ -313,6 +313,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_NUMPAD_ENTER:
+            case KeyEvent.KEYCODE_SOFT_LEFT:
                 if (!isLoadApp) {
                     isLoadApp = true;
                     Snackbar.make(mainBinding.getRoot(),R.string.loading,Snackbar.LENGTH_SHORT).show();
@@ -342,6 +343,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         return true;
                     }
                 }
+                return true;
+            case KeyEvent.KEYCODE_SOFT_RIGHT:
+                it.setAction("android.intent.action.MAIN");
+                it.addCategory("android.intent.category.APP_CONTACTS");
+                it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(it);
                 return true;
             case KeyEvent.KEYCODE_CALL:
             default:
