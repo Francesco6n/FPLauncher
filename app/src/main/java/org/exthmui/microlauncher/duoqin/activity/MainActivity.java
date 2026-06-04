@@ -4,8 +4,10 @@ import static org.exthmui.microlauncher.duoqin.utils.Constants.launcherSettingsP
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
@@ -29,22 +31,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import org.exthmui.microlauncher.duoqin.BuildConfig;
 import org.exthmui.microlauncher.duoqin.R;
 import org.exthmui.microlauncher.duoqin.databinding.ActivityMainBinding;
-import org.exthmui.microlauncher.duoqin.utils.BuglyUtils;
 import org.exthmui.microlauncher.duoqin.utils.Constants;
 import org.exthmui.microlauncher.duoqin.utils.LauncherUtils;
-import org.exthmui.microlauncher.duoqin.utils.TextSpeech;
+import org.exthmui.microlauncher.duoqin.utils.LocaleHelper;
 import org.exthmui.microlauncher.duoqin.widgets.CallSmsCounter;
 import org.exthmui.microlauncher.duoqin.widgets.CarrierTextView;
 import org.exthmui.microlauncher.duoqin.widgets.ClockViewManager;
 import org.exthmui.microlauncher.duoqin.widgets.DateTextView;
-import org.exthmui.microlauncher.duoqin.widgets.LunarDateTextView;
-
 import java.lang.reflect.Method;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -60,15 +60,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private final static String TAG = "ML_MainActivity";
     private static final int grant_int=1;
     private boolean carrier_enable;
-    private boolean xiaoai_enable;
     private boolean dialpad_enable;
     private boolean callsms_counter;
-    private boolean lunar_isEnable;
-    private boolean bugly_init;
-    private boolean disagree_privacy;
     private boolean torch = false;
     private boolean isShortPress;
-    private boolean isTTSEnable;
     private boolean isLoadApp = false;
     private boolean isDarkMode;
     private String clock_locate;
@@ -80,9 +75,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private ClockViewManager clockViewManager;
     private DateTextView date;
     private CallSmsCounter callSmsCounter;
-    private LunarDateTextView lunarDate;
     private CarrierTextView carrier;
-    String pound_func;
+    private BroadcastReceiver menuKeyReceiver;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -91,28 +90,29 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
         if (BuildConfig.DEBUG) { showFirstLogcat(); }
-        checkDevice();
         GrantPermissions();
         sharedPreferences = getSharedPreferences(launcherSettingsPref,Context.MODE_PRIVATE);
         clockViewManager = new ClockViewManager(mainBinding.clock.datesLayout);
         mainBinding.contact.setOnClickListener(new mClick());
         mainBinding.menu.setOnClickListener(new mClick());
         date = new DateTextView(this);
-        lunarDate = new LunarDateTextView(this);
         carrier = new CarrierTextView(this);
         clockViewManager.insertOrUpdateView(1, date);
-        TextSpeech.getInstance(this);
         loadSettings(sharedPreferences);
-        mainBinding.clock.textClock.setOnClickListener(v -> {
-            if (isTTSEnable) {
-                String readText = date.getText().toString() + ","
-                        + mainBinding.clock.textClock.getText().toString();
-                if (lunar_isEnable) {
-                    readText = readText + "," + lunarDate.getText().toString();
+        menuKeyReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (!isLoadApp) {
+                    isLoadApp = true;
+                    Snackbar.make(mainBinding.getRoot(), R.string.loading, Snackbar.LENGTH_SHORT).show();
+                    new Handler(Looper.myLooper()).postDelayed(() -> {
+                        Intent menuIt = new Intent(MainActivity.this, AppListActivity.class);
+                        startActivity(menuIt);
+                        isLoadApp = false;
+                    }, 500);
                 }
-                TextSpeech.read(readText);
             }
-        });
+        };
     }
 
     private void GrantPermissions(){
@@ -184,14 +184,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private void loadSettings(SharedPreferences sharedPreferences){
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        lunar_isEnable= (sharedPreferences.getBoolean("switch_preference_lunar",true));
-        if(lunar_isEnable){
-            Log.d(TAG, "Enable lunar");
-            clockViewManager.insertOrUpdateView(2, lunarDate);
-        }else{
-            Log.d(TAG, "Disable lunar");
-            clockViewManager.removeView(2);
-        }
         carrier_enable = sharedPreferences.getBoolean("switch_preference_carrier_name",true);
         if(carrier_enable){
             Log.d(TAG, "Enable carrier name");
@@ -214,25 +206,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
         clock_locate = (sharedPreferences.getString("list_preference_clock_locate","left"));
         setClockLocate(clock_locate);
-        pound_func = (sharedPreferences.getString("preference_pound_func","volume"));
         String clock_size = (sharedPreferences.getString("list_preference_clock_size","44"));
         mainBinding.clock.textClock.setTextSize(Float.parseFloat(clock_size));
-        xiaoai_enable = sharedPreferences.getBoolean("preference_main_xiaoai_ai",true);
         dialpad_enable = sharedPreferences.getBoolean("preference_dial_pad",true);
-        bugly_init = sharedPreferences.getBoolean("bugly_init",false);
-        disagree_privacy = sharedPreferences.getBoolean("disagree",false);
-        isTTSEnable = sharedPreferences.getBoolean("app_list_tts",false);
         isDarkMode = sharedPreferences.getBoolean("dark_mode",false);
         LauncherUtils.setDarkMode(getApplicationContext(), isDarkMode);
-        if(bugly_init){
-            BuglyUtils.initBugly(this);
-        } else {
-            if (!disagree_privacy) {
-                Intent intent = new Intent(this, PrivacyLicenseActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
-        }
     }
 
     private void setClockLocate(String clockLocate) {
@@ -250,13 +228,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         for (int i = 1; i < 5; i++) {
             Log.d(TAG, "setClockLocate: "+i);
             clockViewManager.setLayoutParams(i, params);
-        }
-    }
-
-    private void checkDevice(){
-        Log.d(TAG, "checkDevice: "+Build.BOARD);
-        if(!LauncherUtils.isQinDevice()){
-            Toasty.info(this,R.string.not_qin_device,Toasty.LENGTH_SHORT).show();
         }
     }
 
@@ -282,6 +253,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (menuKeyReceiver != null) {
+            LocalBroadcastManager.getInstance(this).registerReceiver(menuKeyReceiver,
+                    new IntentFilter(Constants.MENU_KEY_ACTION));
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (menuKeyReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(menuKeyReceiver);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterObserver();
@@ -292,7 +280,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
         unregisterObserver();
-        // TODO: 实现其他用户离开Activity焦点功能
     }
 
     @Override
@@ -323,32 +310,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         Log.d(TAG,"这个按键的KeyCode是 "+keyCode);
         Intent it = new Intent();
         switch (keyCode) {
-            case KeyEvent.KEYCODE_DPAD_DOWN:
-                doInStatusBar(getApplicationContext());
-                return true;
-            case KeyEvent.KEYCODE_DPAD_UP:
-                it.setClassName("com.android.settings",
-                        "com.android.settings.Settings");
-                startActivity(it);
-                return true;
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-                try {
-                    it.setAction("android.intent.action.MAIN");
-                    it.addCategory("android.intent.category.APP_BROWSER");
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(it);
-                } catch (Exception e){
-                    Log.d(TAG,"没有找到系统浏览器或者系统浏览器被禁用");
-                }
-                return true;
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-                try{
-                    it.setAction("android.intent.action.MAIN");
-                    it.addCategory("android.intent.category.APP_MESSAGING");
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(it);
-                }catch (Exception e){
-                    Log.d(TAG,"没有找到系统短信或者系统短信被禁用");
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_NUMPAD_ENTER:
+                if (!isLoadApp) {
+                    isLoadApp = true;
+                    Snackbar.make(mainBinding.getRoot(),R.string.loading,Snackbar.LENGTH_SHORT).show();
+                    new Handler(Looper.myLooper()).postDelayed(() -> {
+                        Intent menuIt = new Intent(MainActivity.this, AppListActivity.class);
+                        startActivity(menuIt);
+                        isLoadApp = false;
+                    },500);
                 }
                 return true;
             case KeyEvent.KEYCODE_MENU:
@@ -361,7 +333,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         isLoadApp = false;
                     },500);
                 }
-                // 延时0.5秒，不加延时的话应用列表的菜单误触我很难顶啊QAQ
                 return true;
             case KeyEvent.KEYCODE_BACK:
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -372,57 +343,32 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     }
                 }
                 return true;
-            case KeyEvent.KEYCODE_POUND:
-                if(pound_func.equals("volume")){
-                    Intent vol_it = new Intent(MainActivity.this, VolumeChanger.class);
-                    vol_it.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                    startActivity(vol_it);
-                }else{
-                    turnOnTorch();
-                }
-                return true;
-            case KeyEvent.KEYCODE_STAR:
-                if(xiaoai_enable){
-                    try{
-                        Intent aiIntent = new Intent();
-                        aiIntent.setClassName("com.duoqin.ai","com.duoqin.ai.MainActivity");
-                        aiIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(aiIntent);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                        Toasty.error(getApplicationContext(),R.string.err_pkg_not_found,Toasty.LENGTH_LONG).show();
-                    }
-                }
-                return true;
             case KeyEvent.KEYCODE_CALL:
-                try {
-                    it = new Intent();
-                    it.setClassName("com.android.dialer","com.duoqin.dialer.DialpadActivity");
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(it);
-                } catch (Exception e) {
-                    Log.e(TAG,"没有找到拨号盘,正在尝试AOSP方式");
-                    it = new Intent();
-                    it.setClassName("com.android.dialer","com.android.dialer.main.impl.MainActivity");
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(it);
-                }
-                return true;
             default:
                 break;
         }
         // 7 到 16 的 keyCode 为数字键1到9，0的值
-        if(keyCode >= 7 && keyCode <= 16){
+        if(keyCode >= 7 && keyCode <= 16 || keyCode == KeyEvent.KEYCODE_STAR || keyCode == KeyEvent.KEYCODE_POUND || keyCode == KeyEvent.KEYCODE_CALL){
             if(dialpad_enable){
+                String number;
+                if (keyCode == KeyEvent.KEYCODE_STAR) {
+                    number = "*";
+                } else if (keyCode == KeyEvent.KEYCODE_POUND) {
+                    number = "#";
+                } else if (keyCode == KeyEvent.KEYCODE_CALL) {
+                    number = "";
+                } else {
+                    number = String.valueOf((char) event.getNumber());
+                }
                 try {
-                    it = new Intent("android.intent.action.DIAL", Uri.parse("tel:" + event.getNumber()));
+                    it = new Intent("android.intent.action.DIAL", Uri.parse("tel:" + number));
                     it.setClassName("com.android.dialer","com.duoqin.dialer.DialpadActivity");
                     it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(it);
                 } catch (Exception e){
                     Log.e(TAG,"没有找到拨号盘,正在尝试AOSP方式");
                     try {
-                        it = new Intent("android.intent.action.DIAL", Uri.parse("tel:" + event.getNumber()));
+                        it = new Intent("android.intent.action.DIAL", Uri.parse("tel:" + number));
                         it.setClassName("com.android.dialer","com.android.dialer.main.impl.MainActivity");
                         it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(it);
@@ -444,7 +390,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             if(torch){
                 try {
                     manager.setTorchMode("0", true);
-                    // "0"是主闪光灯
                 } catch (CameraAccessException e) {
                     e.printStackTrace();
                 }
@@ -463,10 +408,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
-    /**
-     * 通过反射调用系统方法打开通知栏
-     * @param mContext
-     */
     private static void doInStatusBar(Context mContext) {
         try {
             @SuppressLint("WrongConstant") Object service = mContext.getSystemService("statusbar");

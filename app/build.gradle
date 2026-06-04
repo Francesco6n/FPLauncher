@@ -8,7 +8,7 @@ android {
     android.defaultConfig.vectorDrawables.useSupportLibrary = true
     compileSdk 33
 
-    def buildSerial = new SimpleDateFormat("MMddHHmm").format(new Date())
+    def buildSerial = new SimpleDateFormat("yyyyMMdd").format(new Date())
 
     defaultConfig {
         applicationId "org.exthmui.microlauncher.duoqin"

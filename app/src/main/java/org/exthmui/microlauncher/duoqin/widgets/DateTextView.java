@@ -47,7 +47,7 @@ public class DateTextView extends TextView {
         if ("zh_CN".equals(locale)) {
             mDateFormat = "yyyy年MM月dd日 EEEE";
         } else {
-            mDateFormat = "MMMM dd, yyyy EEEE";
+            mDateFormat = "EEEE dd MMMM yyyy";
         }
         registerReceiver();
         updateText();
@@ -61,6 +61,9 @@ public class DateTextView extends TextView {
     private void updateText() {
         SimpleDateFormat sdf = new SimpleDateFormat(mDateFormat, Locale.getDefault());
         String date = sdf.format(new Date());
+        if (date.length() > 0) {
+            date = Character.toUpperCase(date.charAt(0)) + date.substring(1);
+        }
         setText(date);
         setTextColor(Color.WHITE);
         setTextSize(16);

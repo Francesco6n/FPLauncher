@@ -40,9 +40,9 @@ import org.exthmui.microlauncher.duoqin.adapter.AppAdapter;
 import org.exthmui.microlauncher.duoqin.utils.Application;
 import org.exthmui.microlauncher.duoqin.utils.Constants;
 import org.exthmui.microlauncher.duoqin.utils.LauncherUtils;
+import org.exthmui.microlauncher.duoqin.utils.LocaleHelper;
 import org.exthmui.microlauncher.duoqin.utils.PinyinComparator;
 import org.exthmui.microlauncher.duoqin.utils.PinyinUtils;
-import org.exthmui.microlauncher.duoqin.utils.TextSpeech;
 import org.exthmui.microlauncher.duoqin.widgets.AppRecyclerView;
 
 import java.util.ArrayList;
@@ -63,9 +63,13 @@ public class AppList3rdActivity extends AppCompatActivity
     private boolean isSimpleList,isEnablePwd,pwdUseKeyguard;
     private List<String> excludePackagesList;
     private boolean isSortByPinyin = false;
-    private boolean isTTSEnable;
     private boolean isFocusItemZoom;
     private SharedPreferences sharedPreferences;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,7 +79,6 @@ public class AppList3rdActivity extends AppCompatActivity
         back=findViewById(R.id.app_back);
         back.setOnClickListener(new funClick());
         menu.setOnClickListener(new funClick());
-        TextSpeech.getInstance(this);
         sharedPreferences = getSharedPreferences(launcherSettingsPref,Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         loadSettings(sharedPreferences);
@@ -144,7 +147,6 @@ public class AppList3rdActivity extends AppCompatActivity
         pwdUseKeyguard=sp.getBoolean("toolbox_password_use_keyguard",true);
         pwdCustom=sp.getString("toolbox_password_use_custom","");
         isSortByPinyin=sp.getBoolean("switch_preference_app_list_sort",false);
-        isTTSEnable = sharedPreferences.getBoolean("app_list_tts",false);
         isFocusItemZoom = sharedPreferences.getBoolean("app_list_focus_zoom",true);
         iconPackPkg = sharedPreferences.getString("pref_iconPackPackage", "android");
         excludePackagesList = LauncherUtils.getExcludePackagesName(this);
@@ -175,11 +177,6 @@ public class AppList3rdActivity extends AppCompatActivity
         Application application = ((AppAdapter) ((AppRecyclerView) v.getParent()).getAdapter()).getItem(position);
         if (application == null) {
             return;
-        }
-        if (isTTSEnable) {
-            String appName = application.getAppLabel().toString();
-            if (BuildConfig.DEBUG) Log.d(TAG,"TTS is enabled, reading content: " + appName);
-            TextSpeech.read(appName);
         }
     }
 
@@ -290,31 +287,11 @@ public class AppList3rdActivity extends AppCompatActivity
         popupMenu.getMenuInflater().inflate(R.menu.app_option,popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()){
-                case R.id.menu_about_phone:
-                    Log.e("Device Info","Device SDK="+Build.VERSION.SDK_INT);
-                    if (Build.VERSION.SDK_INT >= 28){
-                        Intent ia = new Intent();
-                        ia.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ia.setClassName("com.android.settings",
-                                "com.android.settings.Settings$MyDeviceInfoActivity");
-                        startActivity(ia);
-                    }else{
-                        Intent ia = new Intent();
-                        ia.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ia.setClassName("com.android.settings",
-                                "com.android.settings.Settings$DeviceInfoSettingsActivity");
-                        startActivity(ia);}
-                    break;
                 case R.id.menu_launcher_option:
                     Intent menu = new Intent(AppList3rdActivity.this, MenuActivity.class);
                     menu.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(menu);
                     finish();
-                    break;
-                case R.id.menu_volume_changer:
-                    Intent vol_it = new Intent(AppList3rdActivity.this, VolumeChanger.class);
-                    vol_it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(vol_it);
                     break;
                 case R.id.menu_app_sort_pinyin:
                     isSortByPinyin = true;
@@ -342,28 +319,10 @@ public class AppList3rdActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
-            case R.id.menu_about_phone:
-                if (Build.VERSION.SDK_INT >= 28){
-                    Log.e("Device Info","Device SDK="+Build.VERSION.SDK_INT);
-                    Intent ia = new Intent();
-                    ia.setClassName("com.android.settings",
-                            "com.android.settings.Settings$MyDeviceInfoActivity");
-                    startActivity(ia);
-                }else{
-                    Log.e("Device Info","Device SDK="+Build.VERSION.SDK_INT);
-                    Intent ia = new Intent();
-                    ia.setClassName("com.android.settings",
-                        "com.android.settings.Settings$DeviceInfoSettingsActivity");
-                    startActivity(ia);}
-                break;
             case R.id.menu_launcher_option:
                 Intent menu = new Intent(AppList3rdActivity.this, MenuActivity.class);
                 startActivity(menu);
                 finish();
-                break;
-            case R.id.menu_volume_changer:
-                Intent vol_it = new Intent(AppList3rdActivity.this, VolumeChanger.class);
-                startActivity(vol_it);
                 break;
             case R.id.menu_app_sort_pinyin:
                 isSortByPinyin = true;

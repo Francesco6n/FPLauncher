@@ -58,6 +58,18 @@
             android:enabled="true"
             android:exported="false"/>
 
+        <service
+            android:name=".service.MenuKeyService"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
         <activity
             android:name=".activity.MainActivity"
             android:excludeFromRecents="true"
@@ -97,8 +109,8 @@
             android:excludeFromRecents="true"
             android:clearTaskOnLaunch="true"
             android:exported="true"
-            android:label="@string/app_list_title"
-            android:theme="@style/Theme.MicroLauncher" />
+            android:label=""
+            android:theme="@style/Theme.MicroLauncher.NoActionBar" />
         <activity
             android:name=".activity.AboutActivity"
             android:excludeFromRecents="true"
@@ -132,11 +144,6 @@
             android:exported="false"
             android:label="@string/keyguard_title"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
-        <activity android:name=".activity.PrivacyLicenseActivity"
-            android:exported="false"
-            android:label="@string/privacy_policy_title"
-            android:excludeFromRecents="true"
-            android:clearTaskOnLaunch="true"/>
         <activity android:name=".activity.AppHideListActivity"
             android:exported="false"
             android:label="@string/hide_app_list_label"

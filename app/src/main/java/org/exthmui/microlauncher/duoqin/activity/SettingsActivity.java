@@ -21,6 +21,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.exthmui.microlauncher.duoqin.R;
 import org.exthmui.microlauncher.duoqin.databinding.ActivitySettingsBinding;
 import org.exthmui.microlauncher.duoqin.utils.LauncherUtils;
+import org.exthmui.microlauncher.duoqin.utils.LocaleHelper;
 import org.exthmui.microlauncher.duoqin.utils.RestartTool;
 
 import java.util.List;
@@ -35,6 +36,11 @@ public class SettingsActivity extends AppCompatActivity
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private boolean reload_flag;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,11 +105,6 @@ public class SettingsActivity extends AppCompatActivity
                 binding.settingsBack.setText(getText(R.string.status_reload_launcher));
                 reload_flag=true;
                 break;
-            case "preference_pound_func":
-                if (sharedPreferences.getString("preference_pound_func","volume").equals("torch")){
-                    GrantPermissions(new String[]{Manifest.permission.CAMERA},2);
-                }
-                break;
             case "dark_mode":
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     //判断暗色模式是否与设置一致
@@ -130,10 +131,6 @@ public class SettingsActivity extends AppCompatActivity
                 editor.putBoolean("switch_preference_callsms_counter",true);
                 editor.apply();
                 break;
-            case 2:
-                editor.putString("preference_pound_func","torch");
-                editor.apply();
-                break;
         }
     }
 
@@ -142,10 +139,6 @@ public class SettingsActivity extends AppCompatActivity
         switch (requestCode){
             case 1:
                 editor.putBoolean("switch_preference_callsms_counter",false);
-                editor.apply();
-                break;
-            case 2:
-                editor.putString("preference_pound_func","volume");
                 editor.apply();
                 break;
         }

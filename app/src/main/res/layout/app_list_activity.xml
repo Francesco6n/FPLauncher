@@ -10,6 +10,9 @@
         style="@style/Recycler_Scroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:padding="12dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
         android:layout_weight="1"/>
 
     <RelativeLayout

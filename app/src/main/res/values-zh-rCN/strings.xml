@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">微型启动器多亲版</string>
+    <string name="app_name">FPLauncher</string>
     <string name="menu">功能表</string>
     <string name="contact">通讯录</string>
     <string name="power_btn">电源</string>
@@ -110,7 +110,6 @@
     <string name="preference_callsms_summary">统计通知栏中未接来点数量和系统未读短信数量</string>
     <string name="permission_required_title">需要获取一些功能必要权限</string>
     <string name="permission_dnd_require">请授予勿扰权限以用于开关勿扰模式</string>
-    <string name="not_qin_device">非多亲设备，部分功能可能无法使用。</string>
     <string name="ring_mode_title">响铃模式</string>
     <string name="ring_mode_normal">正常</string>
     <string name="ring_mode_vibrate">震动</string>
@@ -170,4 +169,14 @@
     <string name="icon_pack_default_label">默认</string>
     <string name="icon_pack_add">安装更多</string>
     <string name="icon_pack_no_market">没有可用的应用商店</string>
+
+    <!-- Language -->
+    <string name="language_title">语言</string>
+    <string name="language_default">系统</string>
+    <string name="language_it">意大利语</string>
+    <string name="language_fr">法语</string>
+    <string name="language_es">西班牙语</string>
+    <string name="language_en">英语</string>
+    <string name="language_zh">中文</string>
+    <string name="app_version_title">版本</string>
 </resources>

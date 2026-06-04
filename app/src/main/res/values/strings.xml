@@ -1,5 +1,5 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">MicroLauncher</string>
+    <string name="app_name">FPLauncher</string>
     <string name="menu">Menu</string>
     <string name="contact">Contact</string>
     <string name="power_btn">Power</string>
@@ -42,8 +42,6 @@
     <string name="easter_egg_string">Such a good Gensokyo!</string>
     <string name="error_lock_phone">Error: Lock phone error!</string>
     <string name="preference_main_category">Main Screen Settings</string>
-    <string name="preference_main_lunar">Enable Chinese Lunar</string>
-    <string name="preference_main_lunar_summary">Display Chinese lunar in clock</string>
     <string name="clock_locate_left_up">Left up</string>
     <string name="clock_locate_right_up">Right up</string>
     <string name="clock_locate_left_down">Left down</string>
@@ -61,13 +59,8 @@
     <string name="preference_carrier">Enable carrier name display</string>
     <string name="preference_carrier_summary">Display carrier name in clock</string>
     <string name="default_carrier">Genso Telecom</string>
-    <string name="preference_main_enable_ai_category">When this function is enabled, press the * key will launch XiaoAi AI</string>
-    <string name="preference_main_enable_ai">Enable AI key</string>
     <string name="preference_enable_dial">Enable Dial Pad</string>
     <string name="preference_dial_summary">Enable DialPad mode</string>
-    <string name="preference_pound_func_title">Choose Pound key function</string>
-    <string name="pound_func_volume">Volume Panel</string>
-    <string name="pound_func_torch">Torch</string>
     <string name="permission_denied">It seems that a permission has been denied and we cannot provide this function</string>
     <string name="err_pkg_not_found">Cannot found app, are you uninstalled the app or disabled the app?</string>
     <string name="content_desc_app_icon">App Icon</string>
@@ -113,15 +106,10 @@
     <string name="preference_callsms_summary">Display missed call sms counter in clock</string>
     <string name="permission_required_title">Need some necessary permissions</string>
     <string name="permission_dnd_require">Please grant Do Not Disturb permission to switch on/off Do Not Disturb mode</string>
-    <string name="not_qin_device">Not Qin device, some feature may be unusable</string>
     <string name="ring_mode_title">Mode</string>
     <string name="ring_mode_normal">Normal</string>
     <string name="ring_mode_vibrate">Vibrate</string>
     <string name="ring_mode_dnd">DnD</string>
-    <string name="privacy_policy_title">Privacy Policy</string>
-    <string name="privacy_read_first">Please read privacy policy first!</string>
-    <string name="agree">Agree</string>
-    <string name="disagree">Disagree</string>
     <string name="shortcuts_title">App Shortcuts</string>
     <string name="no_shortcuts_toast">This app doesn\'t have shortcuts</string>
     <string name="not_default_launcher_shortcut_msg">This software is not the default launcher can not use the shortcut function!</string>
@@ -143,10 +131,6 @@
     <string name="carrier_china_unicom">China Unicom</string>
     <string name="carrier_cmcc">CMCC</string>
     <string name="carrier_chn_ct">China Telecom</string>
-
-    <!-- TTS -->
-    <string name="tts_settings_title">TTS Read</string>
-    <string name="tts_settings_summary">Application list and homepage clocks use system TTS to read content, requiring the system to install the TTS engine for the supported languages \nDoesnt broadcast whats in the hidden app list</string>
 
     <!-- Hide App -->
     <string name="menu_hide_app_label">Hidden Apps</string>
@@ -182,5 +166,13 @@
     <string name="icon_pack_add">Install more</string>
     <string name="icon_pack_no_market">There\'s no available app store</string>
 
-
+    <!-- Language -->
+    <string name="language_title">Language</string>
+    <string name="language_default">System</string>
+    <string name="language_it">Italian</string>
+    <string name="language_fr">French</string>
+    <string name="language_es">Spanish</string>
+    <string name="language_en">English</string>
+    <string name="language_zh">Chinese</string>
+    <string name="app_version_title">Versione</string>
 </resources>

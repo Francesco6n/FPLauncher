@@ -16,10 +16,11 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,7 +28,6 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,9 +47,9 @@ import org.exthmui.microlauncher.duoqin.icons.providers.IconPackProvider;
 import org.exthmui.microlauncher.duoqin.utils.Application;
 import org.exthmui.microlauncher.duoqin.utils.Constants;
 import org.exthmui.microlauncher.duoqin.utils.LauncherUtils;
+import org.exthmui.microlauncher.duoqin.utils.LocaleHelper;
 import org.exthmui.microlauncher.duoqin.utils.PinyinComparator;
 import org.exthmui.microlauncher.duoqin.utils.PinyinUtils;
-import org.exthmui.microlauncher.duoqin.utils.TextSpeech;
 import org.exthmui.microlauncher.duoqin.widgets.AppRecyclerView;
 import org.w3c.dom.Text;
 
@@ -74,9 +74,14 @@ public class AppListActivity extends AppCompatActivity
     private String iconPackPkg;
     private List<String> excludePackagesList;
     private boolean isSimpleList;
-    private boolean isTTSEnable;
     private boolean isFocusItemZoom;
     private boolean isSortByPinyin = false;
+    private BroadcastReceiver menuKeyReceiver;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,22 +90,33 @@ public class AppListActivity extends AppCompatActivity
         setContentView(binding.getRoot());
         binding.appBack.setOnClickListener(new funClick());
         binding.appMenu.setOnClickListener(new funClick());
-        TextSpeech.getInstance(this);
         sharedPreferences = getSharedPreferences(launcherSettingsPref,Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         loadSettings(sharedPreferences);
         loadApp();
         receiveSyscast();
-        changeTitle(isSimpleList);
+        menuKeyReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                showMenuDelayed();
+            }
+        };
     }
 
-    private void changeTitle(boolean isSimpleTitle){
-        if(isSimpleTitle){
-            setTitle(R.string.menu);
-            Log.d(TAG,"changeTitle true");
-        }else{
-            setTitle(R.string.app_list_title);
-            Log.d(TAG,"changeTitle false");
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (menuKeyReceiver != null) {
+            LocalBroadcastManager.getInstance(this).registerReceiver(menuKeyReceiver,
+                    new IntentFilter(Constants.MENU_KEY_ACTION));
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (menuKeyReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(menuKeyReceiver);
         }
     }
 
@@ -108,7 +124,6 @@ public class AppListActivity extends AppCompatActivity
         app_list_style=sharedPreferences.getString("app_list_func","grid");
         isSimpleList=sharedPreferences.getBoolean("switch_preference_app_list_func",false);
         isSortByPinyin=sharedPreferences.getBoolean("switch_preference_app_list_sort",false);
-        isTTSEnable = sharedPreferences.getBoolean("app_list_tts",false);
         iconPackPkg = sharedPreferences.getString("pref_iconPackPackage", "android");
         isFocusItemZoom = sharedPreferences.getBoolean("app_list_focus_zoom",true);
         excludePackagesList = LauncherUtils.getExcludePackagesName(this);
@@ -140,11 +155,6 @@ public class AppListActivity extends AppCompatActivity
         if (application == null) {
             return;
         }
-        if (isTTSEnable) {
-            String appName = application.getAppLabel().toString();
-            if (BuildConfig.DEBUG) Log.d(TAG,"TTS is enabled, reading content: " + appName);
-            TextSpeech.read(appName);
-        }
     }
 
     class PkgDelReceiver extends BroadcastReceiver{
@@ -164,6 +174,10 @@ public class AppListActivity extends AppCompatActivity
             Toasty.info(context,R.string.refreshing_pkg_list,Toasty.LENGTH_SHORT).show();
             loadApp();
         }
+    }
+
+    private void showMenuDelayed() {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> showMenu(binding.appMenu), 150);
     }
 
     @Override
@@ -288,31 +302,11 @@ public class AppListActivity extends AppCompatActivity
         popupMenu.getMenuInflater().inflate(R.menu.app_option,popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()){
-                case R.id.menu_about_phone:
-                    Log.e("Device Info","Device SDK="+Build.VERSION.SDK_INT);
-                    if (Build.VERSION.SDK_INT >= 28){
-                        Intent ia = new Intent();
-                        ia.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ia.setClassName("com.android.settings",
-                                "com.android.settings.Settings$MyDeviceInfoActivity");
-                        startActivity(ia);
-                    }else{
-                        Intent ia = new Intent();
-                        ia.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ia.setClassName("com.android.settings",
-                                "com.android.settings.Settings$DeviceInfoSettingsActivity");
-                        startActivity(ia);}
-                    break;
                 case R.id.menu_launcher_option:
                     Intent menu = new Intent(AppListActivity.this, MenuActivity.class);
                     menu.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(menu);
                     finish();
-                    break;
-                case R.id.menu_volume_changer:
-                    Intent vol_it = new Intent(AppListActivity.this, VolumeChanger.class);
-                    vol_it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(vol_it);
                     break;
                 case R.id.menu_app_sort_pinyin:
                     isSortByPinyin = true;
@@ -328,53 +322,6 @@ public class AppListActivity extends AppCompatActivity
             return true;
         });
         popupMenu.show();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.app_option,menu);
-        return true;
-    }
-
-    @SuppressLint("NonConstantResourceId")
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.menu_about_phone:
-                if (Build.VERSION.SDK_INT >= 28){
-                    Log.e("Device Info","Device SDK="+Build.VERSION.SDK_INT);
-                    Intent ia = new Intent();
-                    ia.setClassName("com.android.settings",
-                            "com.android.settings.Settings$MyDeviceInfoActivity");
-                    startActivity(ia);
-                }else{
-                    Log.e("Device Info","Device SDK="+Build.VERSION.SDK_INT);
-                    Intent ia = new Intent();
-                    ia.setClassName("com.android.settings",
-                        "com.android.settings.Settings$DeviceInfoSettingsActivity");
-                    startActivity(ia);}
-                break;
-            case R.id.menu_launcher_option:
-                Intent menu = new Intent(AppListActivity.this, MenuActivity.class);
-                startActivity(menu);
-                finish();
-                break;
-            case R.id.menu_volume_changer:
-                Intent vol_it = new Intent(AppListActivity.this, VolumeChanger.class);
-                startActivity(vol_it);
-                break;
-            case R.id.menu_app_sort_pinyin:
-                isSortByPinyin = true;
-                sharedPreferences.edit().putBoolean("switch_preference_app_list_sort",true).apply();
-                loadApp();
-                break;
-            case R.id.menu_app_sort_default:
-                isSortByPinyin = false;
-                sharedPreferences.edit().putBoolean("switch_preference_app_list_sort",false).apply();
-                loadApp();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

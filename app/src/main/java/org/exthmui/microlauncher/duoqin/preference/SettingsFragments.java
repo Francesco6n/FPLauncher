@@ -1,11 +1,13 @@
 package org.exthmui.microlauncher.duoqin.preference;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.preference.*;
 
+import org.exthmui.microlauncher.duoqin.BuildConfig;
 import org.exthmui.microlauncher.duoqin.R;
 
 import java.util.Objects;
@@ -13,7 +15,7 @@ import java.util.Objects;
 public class SettingsFragments extends PreferenceFragmentCompat implements
         SharedPreferences.OnSharedPreferenceChangeListener{
 
-    public ListPreference clock_locate,clock_size,pound_func,app_list_style;
+    public ListPreference clock_locate,clock_size,app_list_style,language;
     SwitchPreference toolbox_pwd,pwd_keyguard,callSmsSwitch;
     EditTextPreference pwd_custom;
 
@@ -26,18 +28,19 @@ public class SettingsFragments extends PreferenceFragmentCompat implements
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         boolean pwd_enabled = sharedPreferences.getBoolean("enable_toolbox_password",false);
         boolean callSmsCounter = sharedPreferences.getBoolean("switch_preference_callsms_counter",false);
-        String pound_func_value = sharedPreferences.getString("preference_pound_func","volume");
         clock_size.setSummary(clock_size.getValue());
         clock_locate.setSummary(clock_locate.getEntry());
-        if (pound_func_value.equals("volume")) {
-            pound_func.setSummary(R.string.pound_func_volume);
-        } else if (pound_func_value.equals("torch")) {
-            pound_func.setSummary(R.string.pound_func_torch);
-        }
         app_list_style.setSummary(app_list_style.getEntry());
         pwd_keyguard.setEnabled(pwd_enabled);
         callSmsSwitch.setChecked(callSmsCounter);
         setPwdCustomEnabled(sharedPreferences);
+        if ("app_language".equals(key)) {
+            language.setSummary(language.getEntry());
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.recreate();
+            }
+        }
     }
 
     @Override
@@ -49,18 +52,28 @@ public class SettingsFragments extends PreferenceFragmentCompat implements
         if(Build.VERSION.SDK_INT<28){ ((PreferenceGroup) Objects.requireNonNull(findPreference("preference_func"))).removePreference(findPreference("preference_main_default_launcher")); }
         clock_locate= getPreferenceScreen().findPreference("list_preference_clock_locate");
         clock_size=getPreferenceScreen().findPreference("list_preference_clock_size");
-        pound_func=getPreferenceScreen().findPreference("preference_pound_func");
         app_list_style=getPreferenceScreen().findPreference("app_list_func");
         toolbox_pwd=getPreferenceScreen().findPreference("enable_toolbox_password");
         pwd_keyguard=getPreferenceScreen().findPreference("toolbox_password_use_keyguard");
         pwd_custom=getPreferenceScreen().findPreference("toolbox_password_use_custom");
         callSmsSwitch=getPreferenceScreen().findPreference("switch_preference_callsms_counter");
+        language=getPreferenceScreen().findPreference("app_language");
         clock_size.setSummary(clock_size.getValue());
         clock_locate.setSummary(clock_locate.getEntry());
-        pound_func.setSummary(pound_func.getEntry());
         app_list_style.setSummary(app_list_style.getEntry());
+        language.setSummary(language.getEntry());
         pwd_keyguard.setEnabled(sp.getBoolean("enable_toolbox_password",false));
         setPwdCustomEnabled(sp);
+        Preference versionPref = findPreference("app_version");
+        if (versionPref != null) {
+            String version = BuildConfig.VERSION_NAME;
+            String[] parts = version.split("-");
+            if (parts.length > 1) {
+                versionPref.setSummary("v." + parts[1]);
+            } else {
+                versionPref.setSummary(version);
+            }
+        }
     }
 
     private void setPwdCustomEnabled(SharedPreferences sharedPreferences){

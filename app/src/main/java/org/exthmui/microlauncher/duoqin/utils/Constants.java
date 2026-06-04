@@ -19,4 +19,6 @@ public class Constants {
 
     public static final String appExcludePref = "exclude";
 
+    public static final String MENU_KEY_ACTION = BuildConfig.APPLICATION_ID + ".action.MENU_KEY";
+
 }

@@ -10,16 +10,6 @@
         <item>right</item>
     </string-array>
 
-    <string-array name="pound_func_entries">
-        <item>@string/pound_func_volume</item>
-        <item>@string/pound_func_torch</item>
-    </string-array>
-
-    <string-array name="pound_func_values" translatable="false">
-        <item>volume</item>
-        <item>torch</item>
-    </string-array>
-
     <string-array name="app_list_entries">
         <item>@string/app_style_list</item>
         <item>@string/app_style_grid</item>
@@ -51,5 +41,23 @@
         <item>66</item>
         <item>68</item>
         <item>70</item>
+    </string-array>
+
+    <string-array name="language_entries">
+        <item>@string/language_default</item>
+        <item>@string/language_it</item>
+        <item>@string/language_fr</item>
+        <item>@string/language_es</item>
+        <item>@string/language_en</item>
+        <item>@string/language_zh</item>
+    </string-array>
+
+    <string-array name="language_values" translatable="false">
+        <item>system</item>
+        <item>it</item>
+        <item>fr</item>
+        <item>es</item>
+        <item>en</item>
+        <item>zh</item>
     </string-array>
 </resources>

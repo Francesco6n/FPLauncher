@@ -25,6 +25,11 @@
         <item name="android:windowSplashScreenBackground">@color/background</item>
     </style>
 
+    <style name="Theme.MicroLauncher.NoActionBar" parent="Theme.MicroLauncher">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
     <style name="NoTitle" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/system_accent</item>
         <item name="colorPrimaryDark">@color/system_accent_darker</item>

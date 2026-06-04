@@ -9,11 +9,6 @@
         <!-- Main -->
         <SwitchPreference
             android:defaultValue="true"
-            android:key="switch_preference_lunar"
-            android:title="@string/preference_main_lunar"
-            android:summary="@string/preference_main_lunar_summary"/>
-        <SwitchPreference
-            android:defaultValue="true"
             android:key="switch_preference_carrier_name"
             android:title="@string/preference_carrier"
             android:summary="@string/preference_carrier_summary"/>
@@ -68,11 +63,6 @@
             android:summary="@string/preference_app_list_func_category"/>
         <SwitchPreference
             android:defaultValue="false"
-            android:key="app_list_tts"
-            android:title="@string/tts_settings_title"
-            android:summary="@string/tts_settings_summary"/>
-        <SwitchPreference
-            android:defaultValue="false"
             android:key="hide_app"
             android:title="@string/menu_hide_app_label"
             android:summary="@string/menu_hide_app_summary"/>
@@ -110,20 +100,9 @@
         android:key="preference_func">
         <SwitchPreference
             android:defaultValue="true"
-            android:key="preference_main_xiaoai_ai"
-            android:summary="@string/preference_main_enable_ai_category"
-            android:title="@string/preference_main_enable_ai" />
-        <SwitchPreference
-            android:defaultValue="true"
             android:key="preference_dial_pad"
             android:summary="@string/preference_dial_summary"
             android:title="@string/preference_enable_dial"/>
-        <ListPreference
-            android:defaultValue="volume"
-            android:title="@string/preference_pound_func_title"
-            android:entries="@array/pound_func_entries"
-            android:entryValues="@array/pound_func_values"
-            android:key="preference_pound_func"/>
         <Preference
             android:key="preference_main_default_launcher"
             android:title="@string/preference_main_default_launcher">
@@ -133,5 +112,16 @@
             app:btn_text="@string/status_reload_launcher"
             app:btn_icon="@drawable/ic_power"
             />
+        <ListPreference
+            android:defaultValue="system"
+            android:entries="@array/language_entries"
+            android:entryValues="@array/language_values"
+            android:key="app_language"
+            android:title="@string/language_title" />
+        <Preference
+            android:key="app_version"
+            android:selectable="false"
+            android:title="@string/app_version_title" />
     </PreferenceCategory>
+
 </PreferenceScreen>

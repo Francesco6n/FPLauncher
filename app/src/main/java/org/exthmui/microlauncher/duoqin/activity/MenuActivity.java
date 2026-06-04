@@ -1,5 +1,6 @@
 package org.exthmui.microlauncher.duoqin.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,15 +19,19 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.exthmui.microlauncher.duoqin.R;
-
-import es.dmoral.toasty.Toasty;
+import org.exthmui.microlauncher.duoqin.utils.LocaleHelper;
 
 public class MenuActivity extends AppCompatActivity{
-    private final static int[] title = { R.string.menu_set_wallpaper,R.string.menu_settings_system,R.string.menu_settings_launcher,R.string.menu_start,R.string.menu_about_me};
-    private final static int[] summary = {R.string.menu_set_wallpaper_sum,R.string.menu_settings_system_sum,R.string.menu_settings_launcher_sum,R.string.menu_start_sum,R.string.menu_about_sum};
-    private final int[] icon = {R.drawable.ic_wallpaper,R.drawable.ic_settings_system,R.drawable.ic_settings_launcher,R.drawable.ic_start,R.drawable.ic_home};
-    Intent it = new Intent();
+    private final static int[] title = { R.string.menu_set_wallpaper,R.string.menu_settings_launcher};
+    private final static int[] summary = {R.string.menu_set_wallpaper_sum,R.string.menu_settings_launcher_sum};
+    private final int[] icon = {R.drawable.ic_wallpaper,R.drawable.ic_settings_launcher};
     TextView back;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,27 +121,11 @@ public class MenuActivity extends AppCompatActivity{
                     Toast.makeText(MenuActivity.this,R.string.choose_wallpaper,Toast.LENGTH_LONG).show();
                     final Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
                     Intent chooser = Intent.createChooser(pickWallpaper,"选择一个壁纸设置...\nSetup wallpaper...");
-                    //发送设置壁纸的请求
                     startActivity(chooser);
                     break;
                 case 1:
-                    it.setClassName("com.android.settings",
-                            "com.android.settings.Settings");
-                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(it);
-                    break;
-                case 2:
-                    //Toasty.info(MenuActivity.this,R.string.what,Toast.LENGTH_LONG,true).show();
                     Intent menu_it = new Intent(MenuActivity.this, SettingsActivity.class);
                     startActivity(menu_it);
-                    break;
-                case 3:
-                    Toasty.info(MenuActivity.this,R.string.what,Toast.LENGTH_LONG,true).show();
-                    break;
-                case 4:
-                    Intent about_it = new Intent(MenuActivity.this, AboutActivity.class);
-                    about_it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(about_it);
                     break;
             }
         }
